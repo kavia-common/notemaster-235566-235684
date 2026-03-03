@@ -142,6 +142,16 @@ export POSTGRES_DB="${DB_NAME}"
 export POSTGRES_PORT="${DB_PORT}"
 EOF
 
+# Run migrations + minimal seed in a way that matches container conventions.
+# - migrations are idempotent and tracked
+# - seeds are optional but helpful for dev; also tracked
+echo "Running database migrations..."
+chmod +x ./migrate.sh ./seed.sh 2>/dev/null || true
+./migrate.sh || (echo "⚠ Migrations failed" && exit 1)
+
+echo "Running database seed (minimal)..."
+./seed.sh || (echo "⚠ Seed failed" && exit 1)
+
 echo "PostgreSQL setup complete!"
 echo "Database: ${DB_NAME}"
 echo "User: ${DB_USER}"
